@@ -1,11 +1,11 @@
 import { Text } from "@react-navigation/elements";
 import { View } from "react-native";
 
-export default function Services() {
+export default function Settings() {
   return (
     <View style={{ flex: 1, alignItems: "center", margin: 10 }}>
       <Text>
-        Services Component: show all the info related to the barber services
+        Settings Component: allow users to configure their preferences
       </Text>
     </View>
   );

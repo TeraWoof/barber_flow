@@ -4,13 +4,20 @@ const cors = require("cors");
 const helmet = require("helmet");
 const apiLimiter = require("./utils/limiter");
 const authenticateBarber = require("./middleware/auth");
-
+const authRoutes = require("./routes/auth");
+const planRoutes = require("./routes/plan");
 const app = express();
 
 // Security e Parsing
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
+
+// Payment Routes
+app.use("/api/plan", planRoutes);
+
+// Authentication Routes
+app.use("/api/auth", authRoutes);
 
 // Barber Import Routes
 const barberGet = require("./barber/get");
