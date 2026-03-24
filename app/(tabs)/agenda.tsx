@@ -11,65 +11,49 @@ export default function Agenda() {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [pickedDate, setPickedDate] = useState(new Date());
   const [filteredAppointments, setFilteredAppointments] = useState([]);
-
-  const appointmentsMockup = [
-    {
-      id: "1",
-      title: "Corte Dêgrade",
-      hour: "10:30",
-      price: 15,
-      date: "20/03/2026",
-      contact: "(+351) 991 199 992",
-      name: "John Doe",
-      status: "pending",
-    },
-    {
-      id: "2",
-      title: "Corte Simples",
-      hour: "09:00",
-      date: "20/02/2026",
-      price: 12.99,
-      contact: "(+351) 991 199 992",
-      name: "John Doe",
-      status: "paid",
-    },
-    {
-      id: "3",
-      title: "Corte Dêgrade com Barba",
-      hour: "09:00",
-      date: "20/04/2026",
-      price: 15,
-      contact: "(+351) 991 199 992",
-      name: "John Crist",
-      status: "pending",
-    },
-    {
-      id: "4",
-      title: "Corte Dêgrade + barba + lavagem",
-      hour: "10:30",
-      date: "20/04/2026",
-      price: 40,
-      contact: "(+351) 991 199 992",
-      name: "John Doe",
-      status: "canceled",
-    },
-    {
-      id: "5",
-      title: "Corte Dêgrade",
-      hour: "10:30",
-      date: "20/04/2026",
-      price: 15,
-      contact: "(+351) 991 199 992",
-      name: "John Doe",
-      status: "confirmed",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Code to fetch appointments from an API or database can be added here
-
-    setPickedDate(new Date()); // Set the default date to today
+    setPickedDate(new Date());
+    fetchAppointments();
   }, []);
+
+  const fetchAppointments = async () => {
+    const dateString = pickedDate.toISOString().split("T")[0].trim();
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `http://192.168.1.151:5000/api/barber/appointments/1`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ data: dateString }),
+        },
+      ).then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res;
+      });
+
+      const result = await response.json();
+
+      if (result.appointments && result.appointments.length > 0) {
+        setAppointments(result.appointments);
+      } else {
+        setAppointments([]);
+      }
+    } catch (error) {
+      setAppointments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -79,18 +63,14 @@ export default function Agenda() {
     setDatePickerVisibility(false);
   };
 
-  const handleConfirm = (date: any) => {
-    console.warn("A date has been picked: ", date);
-    setPickedDate(date);
-    const filtered: any = appointmentsMockup.filter((appointment) => {
-      const appointmentDate = new Date(
-        appointment.date.split("/").reverse().join("-"),
-      );
-      return appointmentDate.toDateString() === date.toDateString();
-    });
-    setFilteredAppointments(filtered);
+  const ConfirmPickedDate = (data: any) => {
+    setPickedDate(data);
     hideDatePicker();
   };
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [pickedDate]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
@@ -148,12 +128,28 @@ export default function Agenda() {
         <DateTimePickerModal
           isVisible={isDatePickerVisible}
           mode="date"
-          onConfirm={handleConfirm}
-          onCancel={hideDatePicker}
+          date={pickedDate}
+          onConfirm={(event) => ConfirmPickedDate(event)}
+          onCancel={() => hideDatePicker()}
           display={"default"}
         />
       </View>
-      {filteredAppointments.length === 0 ? (
+      {loading && (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 20,
+          }}
+        >
+          <Text style={{ fontSize: 16, color: "#888", textAlign: "center" }}>
+            A carregar marcações...
+          </Text>
+        </View>
+      )}
+
+      {!loading && appointments.length == 0 && (
         <View
           style={{
             flex: 1,
@@ -166,9 +162,10 @@ export default function Agenda() {
             Não há agendamentos para esta data.
           </Text>
         </View>
-      ) : (
+      )}
+      {!loading && appointments.length > 0 && (
         <FlatList
-          data={filteredAppointments}
+          data={appointments}
           contentContainerStyle={{
             paddingHorizontal: 10,
             paddingVertical: 10,
@@ -177,11 +174,11 @@ export default function Agenda() {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }: any) => (
             <Card
-              title={item.title}
-              hour={item.hour}
-              price={item.price}
-              contact={item.contact}
-              name={item.name}
+              title={item.services.service_name}
+              hour={item.hour.slice(0, 5)}
+              price={item.services.price}
+              contact={item.client_contact}
+              name={item.client_name}
               status={item.status}
             />
           )}

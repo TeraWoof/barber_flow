@@ -1,19 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const supabase = require("../utils/supabase");
+const supabase = require("../../utils/supabase");
 
 // Esta rota será acessível via /api/barber/:id
-router.get("/:Barberid", async (req, res) => {
-  const { barbeiro_id, data } = req.query; // Ex: data=2024-05-20
+router.post("/:Barberid", async (req, res) => {
+  const { Barberid } = req.params;
+  const data = req.body;
+  const { data: day } = data;
+  console.log("Data recebida:", day);
 
   // 1. Descobrir o dia da semana (0-6) para a data enviada
-  const diaSemana = new Date(data).getDay();
+  const diaSemana = new Date(day).getDay();
 
   // 2. Buscar o horário de funcionamento do barbeiro para esse dia
   const { data: config } = await supabase
     .from("barber_schedule")
     .select("start_time, end_time")
-    .eq("barber_id", barbeiro_id)
+    .eq("barber_id", Barberid)
     .eq("day_of_the_week", diaSemana)
     .single();
 
@@ -33,8 +36,8 @@ router.get("/:Barberid", async (req, res) => {
   const { data: ocupados } = await supabase
     .from("apointments")
     .select("hour")
-    .eq("barber_id", barbeiro_id)
-    .eq("date", data);
+    .eq("barber_id", Barberid)
+    .eq("date", day);
 
   const horasOcupadas = ocupados.map((o) => o.hour);
 

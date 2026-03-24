@@ -1,4 +1,4 @@
-import { subscriptionSchema } from "../schema/subscription";
+import { subscriptionSchema } from "../../schema/subscription";
 
 // No teu Controller/Route
 export const updateSubscription = async (req, res) => {

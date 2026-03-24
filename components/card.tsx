@@ -1,7 +1,9 @@
+import { useAppContext } from "@/app/context/AppContext";
 import { Ionicons } from "@expo/vector-icons";
 import { Text } from "@react-navigation/elements";
 import { useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
+import { StatusModal } from "./statusModal";
 
 type PropsType = {
   title: string;
@@ -14,6 +16,7 @@ type PropsType = {
 
 export default function Card(props: PropsType) {
   const [showOptions, setShowOptions] = useState(false);
+  const { openStatus, statusModal } = useAppContext();
   const { title, hour, contact, price, name, status } = props;
 
   return (
@@ -53,9 +56,7 @@ export default function Card(props: PropsType) {
             <Text style={{ marginTop: 5 }}>{contact}</Text>
           </View>
           <View style={{ marginTop: 10, alignItems: "flex-end" }}>
-            <Text style={{ fontWeight: "bold", fontSize: 16 }}>
-              € {price.toFixed(2)}
-            </Text>
+            <Text style={{ fontWeight: "bold", fontSize: 16 }}>€ {price}</Text>
           </View>
         </View>
         <View
@@ -128,11 +129,7 @@ export default function Card(props: PropsType) {
               backgroundColor: "#f0f0f0",
             }}
             onPress={() => {
-              console.log("Ação para:", title);
-              Alert.alert(
-                "Alterar Estado",
-                "Funcionalidade de alteração de estado em desenvolvimento.",
-              );
+              openStatus();
             }}
           >
             <Text style={{ color: "#000", textAlign: "center" }}>
@@ -142,6 +139,7 @@ export default function Card(props: PropsType) {
           </TouchableOpacity>
         </View>
       )}
+      {statusModal && <StatusModal />}
     </View>
   );
 }

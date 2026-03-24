@@ -3,26 +3,26 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const apiLimiter = require("./utils/limiter");
-const authenticateBarber = require("./middleware/auth");
-const authRoutes = require("./routes/auth");
-const planRoutes = require("./routes/plan");
+/* const authenticateBarber = require("./middleware/auth"); */
+/* const authRoutes = require("./routes/auth");
+const planRoutes = require("./routes/plan"); */
 const app = express();
 
 // Security e Parsing
-app.use(helmet());
+//app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json());
 
 // Payment Routes
-app.use("/api/plan", planRoutes);
+/* app.use("/api/plan", planRoutes);
 
 // Authentication Routes
 app.use("/api/auth", authRoutes);
-
+ */
 // Barber Import Routes
-const barberGet = require("./barber/get");
-const barberPost = require("./barber/post");
-const barberPut = require("./barber/put");
+const barberGet = require("./Controller/barber/get");
+const barberPost = require("./Controller/barber/post");
+const barberPut = require("./Controller/barber/put");
 
 // Client Import Routes
 const clientGet = require("./client/get");
@@ -33,9 +33,13 @@ const clientPut = require("./client/put");
 app.use("/api/client", apiLimiter);
 
 // MObile Baber Routes
-app.use("/api/barber", authenticateBarber, barberGet);
+/* app.use("/api/barber", authenticateBarber, barberGet);
 app.use("/api/barber", authenticateBarber, barberPost);
-app.use("/api/barber", authenticateBarber, barberPut);
+app.use("/api/barber", authenticateBarber, barberPut); */
+
+app.use("/api/barber", barberGet);
+app.use("/api/barber", barberPost);
+app.use("/api/barber", barberPut);
 
 // Web Client Routes
 app.use("/api/client", clientGet);
@@ -52,6 +56,6 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Algo correu mal no servidor!" });
 });
-app.listen(PORT, () => {
-  console.log(`Server a correr na porta ${PORT}`);
+app.listen(PORT, "192.168.1.151", () => {
+  console.log(`Servidor a correr na porta ${PORT}`);
 });
